@@ -14,7 +14,27 @@ You can contribute to this project by using `Whisperer.py` and generating a tran
 
 I've made the process as streamlined as I could. All you need is a little programming experience, a GitHub account, and of course the dependencies/hardware requirements needed to run `Whisperer.py`.
 
+### Alternative to dependencies: Docker
+
+If you rather not install the dependencies and are familiar with Docker, you can use the Dockerfile provided instead. Otherwise, go to [the requirements section](###requirements).
+
+I'm not sure on what impact containerizing `whisper` has on performance, but I would assume it impacts it a little bit. So it might not be the best option, but it's certainly the easiest if you are familiar with Docker.
+
+Assuming you have Docker installed, simply fork this repo, and build & run the container with
+
+```bash
+# template example
+docker-compose build --build-arg video_id=<video_id>
+docker-compose up
+
+# real example
+docker-compose build --build-arg video_id=6zK3i3uK-E0 --model=small
+docker-compose up
+```
 ### Requirements
+
+#### Alternative option: Docker
+
 
 There are 4 requirements for this project.
 

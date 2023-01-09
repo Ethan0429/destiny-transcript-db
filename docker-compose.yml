@@ -1,0 +1,6 @@
+version: "3.9"
+services:
+  transcripter:
+    build: .
+    volumes:
+      - ./transcripts:/destiny-transcript-db/transcripts
