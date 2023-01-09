@@ -28,6 +28,8 @@ docker-compose build --build-arg video_id=<video_id>
 docker-compose up
 
 # real example
+# model=base by default, but you can change it yourself depending on your hardware for better performance
+# more info at https://github.com/openai/whisper#available-models-and-languages
 docker-compose build --build-arg video_id=6zK3i3uK-E0 --model=small
 docker-compose up
 ```
