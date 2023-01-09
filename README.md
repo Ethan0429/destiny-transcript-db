@@ -94,7 +94,7 @@ python3 whisperer.py NyiJDDyUV54 --model large
 
 #### Submitting a pull request
 
-Once it's run, it will take quite awile to finish depending on the size of the video, so just leave it running in the background for awhile. When it's finished, commit your changes to your repo, push it to GitHub, and submit a pull request for the corresponding issue you claimed.
+Once it's run, it will take quite awile to finish depending on the size of the video, so just leave it running in the background for awhile. And **depending on the model you chose** it could be using a large chunk of your VRAM, which means you'll take a performance hit playing games or other GPU intensive things. So you'll mostly just have to leave it be if that's the case. When it's finished, commit your changes to your repo, push it to GitHub, and submit a pull request for the corresponding issue you claimed.
 
 Your pull request should be in the following format:
 
