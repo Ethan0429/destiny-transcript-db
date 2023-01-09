@@ -82,6 +82,8 @@ You'll need to fork the repo so you can later submit a pull request once you've 
 
 ### Running `Whisperer.py`
 
+Once you've claimed an issue, the `video_id` you'll be generating a transcribt for is **the title of that issue itself**. You'll use this when running `Whisperer.py`.
+
 `Whisperer.py` will download whatever video you provide, generate the transcript, and output it as `<video_id>.csv` in the `transcripts/` directory. It *requires* 1 argument, and takes 1 optional argument.
 
 ```
@@ -114,7 +116,7 @@ python3 whisperer.py NyiJDDyUV54 --model large
 
 #### Submitting a pull request
 
-Once it's run, it will take quite awile to finish depending on the size of the video, so just leave it running in the background for awhile. When it's finished, commit your changes to your repo, push it to GitHub, and submit a pull request for the corresponding issue you claimed.
+Once it's run, it will take quite awile to finish depending on the size of the video, so just leave it running in the background for awhile. And **depending on the model you chose** it could be using a large chunk of your VRAM, which means you'll take a performance hit playing games or other GPU intensive things. So you'll mostly just have to leave it be if that's the case. When it's finished, commit your changes to your repo with a message `resolves #xxx`, push it to GitHub, and submit a pull request for the corresponding issue you claimed.
 
 Your pull request should be in the following format:
 
