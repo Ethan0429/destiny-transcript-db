@@ -33,9 +33,6 @@ docker-compose up
 ```
 ### Requirements
 
-#### Alternative option: Docker
-
-
 There are 4 requirements for this project.
 
 - Python 3.7 or greater
