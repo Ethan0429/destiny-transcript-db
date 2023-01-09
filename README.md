@@ -62,6 +62,8 @@ You'll need to fork the repo so you can later submit a pull request once you've 
 
 ### Running `Whisperer.py`
 
+Once you've claimed an issue, the `video_id` you'll be generating a transcribt for is **the title of that issue itself**. You'll use this when running `Whisperer.py`.
+
 `Whisperer.py` will download whatever video you provide, generate the transcript, and output it as `<video_id>.csv` in the `transcripts/` directory. It *requires* 1 argument, and takes 1 optional argument.
 
 ```
