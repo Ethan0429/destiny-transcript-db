@@ -4,10 +4,10 @@ This repo keeps track of which [Destiny](https://www.youtube.com/user/destiny) V
 
 ## How to contribute
 
-You can contribute to this project by using `Whisperer.py` and generating a transcript for a video that has not yet been transcribed. All un-transcribed videos have a deidcated issue. The steps are simple:
+You can contribute to this project by using `Whisperer.py` and generating a transcript for a video that has not yet been transcribed. All un-transcribed videos have a [deidcated issue](https://github.com/Ethan0429/destiny-transcript-db/issues). The steps are simple:
 
 1. Comment under an issue you wish to claim
-2. Complete the transcription process described in the [How to transcribe](section)
+2. Complete the transcription process described in the [How to transcribe](#how-to-transcribe) section below.
 3. Submit a pull request with the transcript csv file in the `transcripts/` directory, addressing the issue you claimed.
 
 ## How to transcribe
@@ -21,7 +21,7 @@ There are 4 requirements for this project.
 - Python 3.7 or greater
 - `ffmpeg`
 - `whisper`
-- `youtube-dl`
+- `yt-dlp`
 
 #### ffmpeg
 
@@ -50,13 +50,11 @@ scoop install ffmpeg
 
 #### youtube-dl
 
-I recommend installing `youtube-dl` with `pip`, which you can do with
+I recommend installing `yt-dlp` with `pip`, which you can do with
 
 ```bash
-pip install --upgrade youtube-dl
+python3 -m pip install -U yt-dlp
 ```
-
-Lastly, clone this repo and cd into it:
 
 #### forking the repo
 
@@ -78,7 +76,11 @@ options:
                  run. Default is "base".
 ```
 
-`--model` is `base` by default, but depending on your machine's VRAM you can (and probably should) use a larger model. More info on the models available and their respective requirements [here](https://github.com/openai/whisper#available-models-and-languages)
+`--model` is `base` by default, but depending on your machine's VRAM you can (and probably should) use a larger model. 
+
+**Make sure you're using the right model for your machine, since using a model that's too large for your machine will cause `Whisperer.py` to crash.**
+
+More info on the model types and hardware requirements can be found [here](https://github.com/openai/whisper#available-models-and-languages)
 
 #### Example
 
@@ -90,10 +92,27 @@ python3 whisperer.py NyiJDDyUV54
 python3 whisperer.py NyiJDDyUV54 --model large
 ```
 
+#### Submitting a pull request
+
 Once it's run, it will take quite awile to finish depending on the size of the video, so just leave it running in the background for awhile. When it's finished, commit your changes to your repo, push it to GitHub, and submit a pull request for the corresponding issue you claimed.
+
+Your pull request should be in the following format:
+
+```
+title: resolves <video_id_issue_number>
+description: How you want to be listed as a contributor (e.g. what image, name/username), and any notes you have about the transcript.
+```
+
+For example, the following pull request address issue #256
+#### Example
+
+```
+title: resolves #256
+description: Username: EvilFossil, image: https://i.kym-cdn.com/entries/icons/original/000/025/526/gnome.jpg
+```
 
 ## End
 
-If/when your pull request is approved and merged, I'll update my database to include it, and I'll list you as a contributor at https://knowyourinfluencer.io/contributors/!
+If/when your pull request is approved and merged, I'll update the database to include it, and I'll list you as a contributor at https://knowyourinfluencer.io/contributors/.
 
 Thanks for your help. dggL
