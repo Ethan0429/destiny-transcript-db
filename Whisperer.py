@@ -20,7 +20,7 @@ class Whisperer:
         return self.segments
 
     def __coalesce_segments(self):
-        result = self.model.transcribe('audio.m4a')
+        result = self.model.transcribe('audio.m4a', condition_on_previous_text=False)
         # with open (f'./transcripts/original.csv', 'w') as f:
         #     for i in result['segments']:
         #         f.write(f'{i["start"]},{i["text"]}\n')
@@ -68,6 +68,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('video_id', help='The Video ID of the YouTube video being transcribed, e.g. "NyiJDDyUV54"',
                         type=str)
+    parser.add_argument('--date', help='Date string',
+                        type=str, default=None, required=False)
     parser.add_argument('--model', help='The Whisper model being used, e.g. "base" or "large". Depends on your hardware. See https://github.com/openai/whisper#available-models-and-languages to see which models your system can run. Default is "base".',
                         type=str, default='base.en', required=False)
     return parser.parse_args()
@@ -125,7 +127,7 @@ def main():
         error_code = ydl.download(URLS)
 
     # create whisperer
-    whisperer = Whisperer(model=args.model, video_id=args.video_id, date=extract_date(video_title))
+    whisperer = Whisperer(model=args.model, video_id=args.video_id, date=extract_date(video_title) if args.date is None else args.date)
 
     # transcribe
     segments = whisperer.transcribe()
