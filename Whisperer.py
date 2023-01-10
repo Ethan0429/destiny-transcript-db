@@ -1,9 +1,12 @@
-import whisper
-import sys
-import csv
 import argparse
-import yt_dlp
+import csv
 import json
+import os
+import sys
+
+import whisper
+import yt_dlp
+
 
 class Whisperer:
     def __init__(self, model: str = 'base', video_id: str = None, date: int = None):
@@ -18,18 +21,32 @@ class Whisperer:
 
     def __coalesce_segments(self):
         result = self.model.transcribe('audio.m4a')
+        # with open (f'./transcripts/original.csv', 'w') as f:
+        #     for i in result['segments']:
+        #         f.write(f'{i["start"]},{i["text"]}\n')
+
         segments = result['segments']
         coalesced_segments = []
         for segment in segments:
-            if len(coalesced_segments) == 0:
-                coalesced_segments.append(segment)
-            else:
-                last_segment = coalesced_segments[-1]
-                if (int(segment['start']) - int(last_segment['end'])) < 30 and len(last_segment['text'].split()) < 40:
-                    last_segment['end'] = segment['end']
-                    last_segment['text'] += segment['text']
-                else:
-                    coalesced_segments.append(segment)
+            if segment['text'] == '':
+                continue
+            skip = 0
+            try:
+                # get the next snippet
+                next_segment = segments[segments.index(
+                    segment) + 1]
+
+                while int(next_segment['start']) - int(segment['start']) < 30 and len(segment['text'].split()) < 40 and next_segment['text'] != '':
+                    skip += 1
+                    segment['text'] += ' ' + next_segment['text']
+                    next_segment['text'] = ''
+
+                    # get the next snippet
+                    next_segment = segments[segments.index(
+                        segment) + skip + 1]
+            except IndexError:
+                pass
+            coalesced_segments.append(segment)
 
         # map a list of segments to convert the start and end times to ints
         coalesced_segments = list(map(lambda segment: {'start': int(
@@ -113,6 +130,9 @@ def main():
     # transcribe
     segments = whisperer.transcribe()
     whisperer.write_to_csv()
+
+    # delete audio.m4a
+    os.remove('audio.m4a')
 
 
 if __name__ == '__main__':
