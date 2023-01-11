@@ -3,6 +3,7 @@ import csv
 import json
 import os
 import sys
+import subprocess as sp
 
 import whisper
 import yt_dlp
@@ -20,29 +21,38 @@ class Whisperer:
         return self.segments
 
     def __coalesce_segments(self):
-        result = self.model.transcribe('audio.m4a', condition_on_previous_text=False)
-        # with open (f'./transcripts/original.csv', 'w') as f:
-        #     for i in result['segments']:
-        #         f.write(f'{i["start"]},{i["text"]}\n')
+        result = self.model.transcribe('audio.wav')
+        with open (f'./transcripts/original.csv', 'w') as f:
+            for i in result['segments']:
+                f.write(f'{i["start"]},{i["text"]}\n')
 
         segments = result['segments']
-        coalesced_segments = []
+        current_text = segments[0]['text']
+        new_segments = [segments[0]]
         for segment in segments:
+            if segment['text'] == current_text:
+                continue
+            else:
+                current_text = segment['text']
+                new_segments.append(segment)
+
+        coalesced_segments = []
+        for segment in new_segments:
             if segment['text'] == '':
                 continue
             skip = 0
             try:
                 # get the next snippet
-                next_segment = segments[segments.index(
+                next_segment = new_segments[new_segments.index(
                     segment) + 1]
 
-                while int(next_segment['start']) - int(segment['start']) < 30 and len(segment['text'].split()) < 40 and next_segment['text'] != '':
+                while float(next_segment['start']) - float(segment['start']) < 20.0 and len(segment['text'].split()) < 40 and next_segment['text'] != '':
                     skip += 1
                     segment['text'] += ' ' + next_segment['text']
                     next_segment['text'] = ''
 
                     # get the next snippet
-                    next_segment = segments[segments.index(
+                    next_segment = new_segments[new_segments.index(
                         segment) + skip + 1]
             except IndexError:
                 pass
@@ -50,7 +60,7 @@ class Whisperer:
 
         # map a list of segments to convert the start and end times to ints
         coalesced_segments = list(map(lambda segment: {'start': int(
-            segment['start']), 'text': segment['text']}, coalesced_segments))
+            round(segment['start'])), 'text': segment['text']}, coalesced_segments))
         return coalesced_segments
 
     def write_to_csv(self):
@@ -122,13 +132,12 @@ def main():
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(URLS[0], download=False)
+        info_dict = ydl.extract_info(URLS[0], download=True)
         video_title = info_dict.get('title', None)
-        error_code = ydl.download(URLS)
 
+    sp.run(['ffmpeg', '-i', 'audio.m4a', 'audio.wav'])
     # create whisperer
     whisperer = Whisperer(model=args.model, video_id=args.video_id, date=extract_date(video_title) if args.date is None else args.date)
-
     # transcribe
     segments = whisperer.transcribe()
     whisperer.write_to_csv()
