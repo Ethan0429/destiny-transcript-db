@@ -22,7 +22,7 @@ class Whisperer:
 
     def __coalesce_segments(self):
         result = self.model.transcribe('audio.wav')
-        with open (f'./transcripts/original.csv', 'w') as f:
+        with open (f'./transcripts/original.csv', 'w', encoding="utf-8") as f:
             for i in result['segments']:
                 f.write(f'{i["start"]},{i["text"]}\n')
 
@@ -64,7 +64,7 @@ class Whisperer:
         return coalesced_segments
 
     def write_to_csv(self):
-        with open(f'./transcripts/{self.video_id}.csv', 'w') as f:
+        with open(f'./transcripts/{self.video_id}.csv', 'w', encoding="utf-8") as f:
             # write header
             f.write('video_id,date,start,text\n')
 
