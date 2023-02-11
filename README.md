@@ -30,6 +30,8 @@ VIDEO_ID=6zK3i3uK-E0 docker-compose up
 
 ### Alternative to dependencies: Poetry
 
+First and foremost, I download `ffmpeg` for your system. You can see the instructions for that [here](#ffmpeg).
+
 You can also use [Poetry](https://python-poetry.org/) to install the dependencies. This is the recommended method if you're on MacOS or Linux.
 
 #### Install dependencies
@@ -87,6 +89,43 @@ pip3 install vosk
 ```
 
 Download this model https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip (**it must be this one exactly**) and extract it to it to a `model/` directory in the root of this repo.
+
+The directory structure should look something like this:
+
+```
+model
+├── am
+│  ├── final.mdl
+│  └── tree
+├── conf
+│  ├── ivector.conf
+│  ├── mfcc.conf
+│  └── model.conf
+├── graph
+│  ├── disambig_tid.int
+│  ├── HCLG.fst
+│  ├── num_pdfs
+│  ├── phones
+│  │  ├── align_lexicon.int
+│  │  ├── align_lexicon.txt
+│  │  ├── disambig.int
+│  │  ├── disambig.txt
+│  │  ├── optional_silence.csl
+│  │  ├── optional_silence.int
+│  │  ├── optional_silence.txt
+│  │  ├── silence.csl
+│  │  ├── word_boundary.int
+│  │  └── word_boundary.txt
+│  ├── phones.txt
+│  └── words.txt
+├── ivector
+│  ├── final.dubm
+│  ├── final.ie
+│  ├── final.mat
+│  ├── global_cmvn.stats
+│  ├── online_cmvn.conf
+│  └── splice.conf
+```
 
 #### youtube-dl
 
