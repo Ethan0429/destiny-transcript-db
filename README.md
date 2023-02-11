@@ -18,6 +18,8 @@ I've made the process as streamlined as I could. All you need is a little progra
 
 If you rather not install the dependencies and are familiar with Docker, you can use the Dockerfile provided instead. Otherwise, go to [the requirements section](###requirements).
 
+Firstly, download the `vosk` model. You can see the instructions for that [here](#vosk-model).
+
 Assuming you have Docker & Docker Compose installed, simply fork this repo, and build & run the container with
 
 ```bash
@@ -30,9 +32,15 @@ VIDEO_ID=6zK3i3uK-E0 docker-compose up
 
 ### Alternative to dependencies: Poetry
 
-First and foremost, I download `ffmpeg` for your system. You can see the instructions for that [here](#ffmpeg).
-
 You can also use [Poetry](https://python-poetry.org/) to install the dependencies. This is the recommended method if you're on MacOS or Linux.
+
+Knock these two things out of the way first:
+
+1. First and foremost, I download `ffmpeg` for your system. You can see the instructions for that [here](#ffmpeg).
+
+2. Download the `vosk` model. You can see the instructions for that [here](#vosk-model).
+
+Now you can install the dependencies and run `Whisperer.py` with Poetry.
 
 #### Install dependencies
 
@@ -87,6 +95,8 @@ scoop install ffmpeg
 ```bash
 pip3 install vosk
 ```
+
+#### vosk model
 
 Download this model https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip (**it must be this one exactly**) and extract it to it to a `model/` directory in the root of this repo.
 
