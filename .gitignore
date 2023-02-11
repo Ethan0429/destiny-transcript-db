@@ -5,3 +5,6 @@ export_issues.py
 transcript_list.txt
 .python-version
 Pip*
+db/
+*backup*
+model/

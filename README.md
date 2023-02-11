@@ -14,32 +14,49 @@ You can contribute to this project by using `Whisperer.py` and generating a tran
 
 I've made the process as streamlined as I could. All you need is a little programming experience, a GitHub account, and of course the dependencies/hardware requirements needed to run `Whisperer.py`.
 
-### Alternative to dependencies: Docker
+### Alternative to dependencies: Docker & Docker Compose
 
 If you rather not install the dependencies and are familiar with Docker, you can use the Dockerfile provided instead. Otherwise, go to [the requirements section](###requirements).
 
-I'm not sure on what impact containerizing `whisper` has on performance, but I would assume it impacts it a little bit. So it might not be the best option, but it's certainly the easiest if you are familiar with Docker.
-
-Assuming you have Docker installed, simply fork this repo, and build & run the container with
+Assuming you have Docker & Docker Compose installed, simply fork this repo, and build & run the container with
 
 ```bash
 # template example
-docker-compose build --build-arg video_id=<video_id>
-docker-compose up
+VIDEO_ID=<video_id> docker-compose up
 
 # real example
-# model=base by default, but you can change it yourself depending on your hardware for better performance
-# more info at https://github.com/openai/whisper#available-models-and-languages
-docker-compose build --build-arg video_id=6zK3i3uK-E0 --model=small
-docker-compose up
+VIDEO_ID=6zK3i3uK-E0 docker-compose up
 ```
+
+### Alternative to dependencies: Poetry
+
+You can also use [Poetry](https://python-poetry.org/) to install the dependencies. This is the recommended method if you're on MacOS or Linux.
+
+#### Install dependencies
+
+```bash
+poetry install
+```
+
+If `vosk` doesn't successfully install, run the following command instead:
+
+```bash
+poetry run pip3 install vosk
+```
+
+#### Run `Whisperer.py`
+
+```bash
+poetry run python3 Whisperer.py <video_id>
+```
+
 ### Requirements
 
 There are 4 requirements for this project.
 
 - Python 3.7 or greater
 - `ffmpeg`
-- `whisper`
+- `vosk`
 - `yt-dlp`
 
 #### ffmpeg
@@ -63,9 +80,13 @@ choco install ffmpeg
 scoop install ffmpeg
 ```
 
-#### whisper
+#### vosk
 
-[Install whisper](https://github.com/openai/whisper#setup)
+```bash
+pip3 install vosk
+```
+
+Download this model https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip (**it must be this one exactly**) and extract it to it to a `model/` directory in the root of this repo.
 
 #### youtube-dl
 
@@ -93,29 +114,17 @@ positional arguments:
 
 options:
   -h, --help     show this help message and exit
-  --model MODEL  The Whisper model being used, e.g. "base" or "large". Depends on your hardware. See https://github.com/openai/whisper#available-models-and-languages to see which models your system can
-                 run. Default is "base".
 ```
-
-`--model` is `base` by default, but depending on your machine's VRAM you can (and probably should) use a larger model. 
-
-**Make sure you're using the right model for your machine, since using a model that's too large for your machine will cause `Whisperer.py` to crash.**
-
-More info on the model types and hardware requirements can be found [here](https://github.com/openai/whisper#available-models-and-languages)
 
 #### Example
 
 ```bash
-# using base whisper model
 python3 whisperer.py NyiJDDyUV54
-
-# using large whisper model
-python3 whisperer.py NyiJDDyUV54 --model large
 ```
 
 #### Submitting a pull request
 
-Once it's run, it will take quite awile to finish depending on the size of the video, so just leave it running in the background for awhile. And **depending on the model you chose** it could be using a large chunk of your VRAM, which means you'll take a performance hit playing games or other GPU intensive things. So you'll mostly just have to leave it be if that's the case. When it's finished, commit your changes to your repo with a message `resolves #xxx`, push it to GitHub, and submit a pull request for the corresponding issue you claimed.
+Once it's run, it will take quite awile to finish depending on the size of the video, so just leave it running in the background for awhile. When it's finished, commit your changes to your repo with a message `resolves #xxx`, push it to GitHub, and submit a pull request for the corresponding issue you claimed.
 
 Your pull request should be in the following format:
 
@@ -130,6 +139,16 @@ For example, the following pull request address issue #256
 ```
 title: resolves #256
 description: Username: EvilFossil, image: https://i.kym-cdn.com/entries/icons/original/000/025/526/gnome.jpg
+```
+
+## Transcribing Odysee Videos
+
+`Whisperer.py` also allows you to transcribe Odysee videos. The process is the same as YouTube videos, except instead of passing a YouTube video ID, you pass the entire Odysee URL.
+
+#### Example
+
+```bash
+python3 Whisperer.py https://odysee.com/@gnomevods:3/RSIejcoWqCU:a
 ```
 
 ## End

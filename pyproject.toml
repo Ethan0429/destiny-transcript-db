@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "destiny-transcript-db"
+version = "0.1.0"
+description = ""
+authors = ["Ethan Rickert <ethanrickert0429@gmail.com>"]
+readme = "README.md"
+packages = [{include = "destiny_transcript_db"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+yt-dlp = "^2023.1.6"
+vosk = "^0.3.45"
+
+[tool.poetry.group.dev.dependencies]
+autopep8 = "^2.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
