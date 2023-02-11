@@ -156,6 +156,14 @@ def main():
     segments = whisperer.transcribe()
     whisperer.write_to_csv()
 
+    # check if CONTAINERIZED env var is set
+    if os.getenv('KYI_CONTAINERIZED') is None:
+        # prompt user for y/Y/yes/Yes if they want to delete the audio file
+        delete_audio = input(
+            'Would you like to delete the audio file? (y/n): ').lower()
+        if delete_audio == 'y' or delete_audio == 'yes':
+            os.remove('audio.m4a')
+
 
 if __name__ == '__main__':
     exit(main())

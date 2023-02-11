@@ -1,5 +1,7 @@
 FROM python:3.10-bullseye
 
+ENV KYI_CONTAINERIZED=1
+
 # install ffmpeg
 RUN apt-get update && apt-get install -y ffmpeg git
 
