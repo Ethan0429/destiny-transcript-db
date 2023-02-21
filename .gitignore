@@ -8,3 +8,5 @@ Pip*
 db/
 *backup*
 model/
+.env
+stream-archiver/

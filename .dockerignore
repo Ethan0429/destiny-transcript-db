@@ -7,3 +7,4 @@ README.md
 .gitignore
 export_issues.py
 audio*
+model/
