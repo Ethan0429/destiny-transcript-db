@@ -1,47 +1,104 @@
+'''
+#####################################################################################
+#####################################################################################
+############ /Whisperer.py & /stream-archiver/Whisperer.py are symlinked ############
+#####################################################################################
+#####################################################################################
+'''
+
+import wave
 import argparse
 import csv
+import time
+import logging
 import json
 import os
 import sys
 import json
 import subprocess as sp
 from vosk import Model, KaldiRecognizer, SetLogLevel
-import yt_dlp
+from rich import print_json
+from rich.progress import track, Progress
+from rich.console import Console
+from rich.theme import Theme
+from rich import print
+from rich.traceback import install
+from multiprocessing import Pool as ThreadPool
+install()
 
 SAMPLE_RATE = 16000
+FRAME_SIZE = 1000
 SetLogLevel(-1)
+
+model = Model("model")
+
+
+def concatentate_segment_times(data: list):
+    prev_start = 0.0
+    increment = 0.0
+    # Iterate through each result array
+    for results in data:
+        if 'result' not in results:
+            continue
+        # Iterate through each result object in the array
+        for result in results['result']:
+            # if the current start time is less than the previous start time, update increment to the last end time
+            if result['start'] < prev_start:
+                increment += float(FRAME_SIZE)
+
+            prev_start = result['start']
+
+            # update the start time to the current start time plus the increment
+            result['start'] += increment
+            result['end'] += increment
+
+    return data
 
 
 class Whisperer:
-    def __init__(self, video_id: str = None, date: int = None):
-        self.model = Model(lang="en-us")
+
+    def __init__(self, video_id: str = None, date: int = None, audio_file: str = 'pre-audio.wav', model: str = 'model'):
         self.video_id = video_id
         self.segments = []
         self.date = date if date is not None else 20230101
+        self.audio_file = audio_file
+        self.console = Console(theme=Theme({
+            'log': 'bold cyan',
+            'success': 'bold green',
+            'error': 'bold red'
+        }))
+        self.console.log(
+            f"Initialized Whisperer for {self.video_id}", log_locals=True, style="log")
 
     def transcribe(self):
+        self.__extract_audio()
+
+        self.console.log(
+            f"🔉 Transcribing {self.audio_file}...", style="log")
+
+        # transcribe each audio file
+        sp.run(["./transcribe.sh"], check=True, shell=True)
+
+        # load the transcription data
+        with open('transcription.json', 'r') as f:
+            self.segments = json.load(f)
+
+        self.segments = concatentate_segment_times(self.segments)
+
+        self.console.log('✅ Audio transcribed', style='success')
         self.segments = self.__coalesce_segments()
-        return self.segments
+
+    def __extract_audio(self):
+        with self.console.status("🔊 [bold cyan]Extracting audio...", spinner='aesthetic') as status:
+            sp.run(["ffmpeg", "-loglevel", "quiet", "-i", self.audio_file, "-ac",
+                    "1", "-ar", str(SAMPLE_RATE), 'audio.wav'], check=True)
+
+        self.audio_file = 'audio.wav'
+        self.console.log('✅ Audio extracted', style='success')
 
     def __coalesce_segments(self):
-        rec = KaldiRecognizer(self.model, SAMPLE_RATE)
-        rec.SetWords(True)
-        segments = []
-        with sp.Popen(["ffmpeg", "-loglevel", "quiet", "-i", "audio.m4a", "-ar", str(SAMPLE_RATE), "-ac", "1", "-f", "s16le", "-"], stdout=sp.PIPE) as process:
-
-            while True:
-                data = process.stdout.read(4000)
-                if len(data) == 0:
-                    break
-                if rec.AcceptWaveform(data):
-                    part_result = json.loads(rec.Result())
-                    segments.append(part_result)
-
-            part_result = json.loads(rec.FinalResult())
-            segments.append(part_result)
-
         results = []
-        for i in segments:
+        for i in self.segments:
             # check if result key exists
             if 'result' not in i:
                 continue
@@ -49,7 +106,7 @@ class Whisperer:
                 results.append(result)
 
         coalesced_results = []
-        for result in results:
+        for result in track(results, description="[bold cyan]Coalescing results...", show_speed=True, total=len(results)):
             if result['word'] == '':
                 continue
 
@@ -62,7 +119,7 @@ class Whisperer:
 
             try:
                 # add the next result to the current result if the next result is within 20 seconds or the current result is less than 40 words
-                while (float(results[results.index(result) + skip]['start']) - start_time) < 20.0 and len(result['word'].split()) < 40:
+                while (float(results[results.index(result) + skip]['start']) - start_time) < 20.0 and len(new_result['word'].split()) < 40:
                     new_result['word'] += ' ' + \
                         results[results.index(result) + skip]['word']
                     results[results.index(result) + skip]['word'] = ''
@@ -71,10 +128,14 @@ class Whisperer:
                 pass
 
             coalesced_results.append(new_result)
+
         return coalesced_results
 
-    def write_to_csv(self):
-        with open(f'./transcripts/{self.video_id}.csv', 'w') as f:
+    def write_to_csv(self, path: str = './transcripts'):
+        filename = self.video_id.split(
+            'kyi-')[1] if 'kyi-' in self.video_id else self.video_id
+
+        with open(f'{path}/{filename}.csv', 'w') as f:
             # write header
             f.write('video_id,date,start,text\n')
 
@@ -83,7 +144,7 @@ class Whisperer:
                 filter(lambda segment: len(segment['word'].split()) > 5, self.segments))
 
             # write segments
-            for segment in self.segments:
+            for segment in track(self.segments, description="[bold cyan]Writing to CSV...", show_speed=True, total=len(self.segments)):
                 f.write(
                     f'{self.video_id},{self.date},{int(segment["start"])},{segment["word"].strip()}\n')
 
@@ -109,8 +170,8 @@ def extract_date(title: str):
             day = day[1:]
 
         try:
-            int(day[0:2])
-            day = day[0:2]
+            int(day[0: 2])
+            day = day[0: 2]
         except ValueError:
             day = day[0]
 
@@ -122,47 +183,84 @@ def extract_date(title: str):
 
         date = int(year + month + day)
     except:
+        print('[bold red]Could not extract date from title!')
         date = None
 
     return date
 
 
 def main():
+    import yt_dlp  # noqa: E402
     args = parse_args()
+    date = None
+    audio_file = 'pre-audio.wav'
+    video_id = args.video_id
+    video_title = None
 
-    URLS = [
-        f'https://www.youtube.com/watch?v={args.video_id}'] if 'odysee' not in args.video_id else [f'{args.video_id}']
+    # check if video is archived from stream-archiver
+    if 'kyi-' not in args.video_id:
+        URLS = [
+            f'https://www.youtube.com/watch?v={args.video_id}'] if 'odysee' not in args.video_id else [f'{args.video_id}']
 
-    ydl_opts = {
-        'format': 'm4a/bestaudio/best',
-        'outtmpl': 'audio.m4a',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'm4a',
-        }]
-    }
+        ydl_opts = {
+            'format': 'wav/bestaudio/best',
+            'outtmpl': 'pre-audio.%(ext)s',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'wav',
+            }]
+        }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(URLS[0], download=True)
-        video_title = info_dict.get('title', None)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(URLS[0], download=True)
+            video_title = info_dict.get('title', None)
 
-    video_id = args.video_id.split(
-        '/')[-1] if 'odysee' in args.video_id else args.video_id
+        video_id = args.video_id.split(
+            '/')[-1] if 'odysee' in args.video_id else args.video_id
+    else:
+        # find .m4a file in this directory
+        for file in os.listdir('.'):
+            if file.endswith('.mp4'):
+                audio_file = file
+                date = int(file.split('-')[1].split('.')[0])
+                video_id = args.video_id
+                break
 
     # create whisperer
     whisperer = Whisperer(video_id=video_id, date=extract_date(
-        video_title))
+        video_title) if date is None else date, audio_file=audio_file)
+
     # transcribe
-    segments = whisperer.transcribe()
-    whisperer.write_to_csv()
+    try:
+        segments = whisperer.transcribe()
+        whisperer.write_to_csv()
+    except Exception as e:
+        whisperer.console.log(
+            '❌ [bold red]Something went wrong w/whisperer')
+        for file in os.listdir('.'):
+            if file.endswith('.m4a') or file.endswith('.wav'):
+                os.remove(file)
+        try:
+            os.remove('transcription.json')
+        except:
+            pass
+        print(e)
+        exit(1)
 
     # check if CONTAINERIZED env var is set
     if os.getenv('KYI_CONTAINERIZED') is None:
         # prompt user for y/Y/yes/Yes if they want to delete the audio file
-        delete_audio = input(
-            'Would you like to delete the audio file? (y/n): ').lower()
+        delete_audio = whisperer.console.input(
+            '[bold cyan]Would you like to delete the corresponding files?[/] [bold white](y/n)[/]: ').lower()
         if delete_audio == 'y' or delete_audio == 'yes':
-            os.remove('audio.m4a')
+            # find any .m4a and .mp4 files in this directory
+            for file in os.listdir('.'):
+                if file.endswith('.m4a') or file.endswith('.mp4') or file.endswith('.wav'):
+                    os.remove(file)
+            try:
+                os.remove('transcription.json')
+            except:
+                pass
 
 
 if __name__ == '__main__':
