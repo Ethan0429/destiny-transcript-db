@@ -4,4 +4,5 @@ services:
     build: .
     volumes:
       - ./transcripts:/destiny-transcript-db/transcripts
+      - ./.env:/destiny-transcript-db/.env
     command: ${VIDEO_ID}

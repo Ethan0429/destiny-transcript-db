@@ -16,6 +16,7 @@ import os
 import sys
 import json
 import subprocess as sp
+from dotenv import load_dotenv
 from vosk import Model, KaldiRecognizer, SetLogLevel
 from rich import print_json
 from rich.progress import track, Progress
@@ -25,9 +26,10 @@ from rich import print
 from rich.traceback import install
 from multiprocessing import Pool as ThreadPool
 install()
+load_dotenv()
 
 SAMPLE_RATE = 16000
-FRAME_SIZE = 1000
+FRAME_SIZE = int(os.getenv('FRAME_SIZE'))
 SetLogLevel(-1)
 
 model = Model("model")

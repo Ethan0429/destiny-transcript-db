@@ -17,13 +17,14 @@ RUN apt-get install -y python3-pip && \
 WORKDIR /destiny-transcript-db
 
 RUN mkdir -p /destiny-transcript-db/model && \
-    wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip && \
+    wget https://alphacephei.com/vosk/models/vosk-model-en-us-daanzu-20200905.zip && \
     unzip *.zip && \
-    cp -r /destiny-transcript-db/vosk-model-small-en-us-0.15/* /destiny-transcript-db/model && \
+    cp -r /destiny-transcript-db/vosk-model-en-us-daanzu-20200905/* /destiny-transcript-db/model && \
+    rm -rf vosk-model-en-us-daanzu-20200905 && \
     rm *.zip
 
 COPY . .
 
 RUN chmod +x ./transcribe.sh
 
-ENTRYPOINT [ "python3", "Whisperer.py" ]
+ENTRYPOINT [ "python3", "-u", "Whisperer.py" ]

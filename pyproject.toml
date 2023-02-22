@@ -11,6 +11,7 @@ python = ">=3.8"
 yt-dlp = "^2023.1.6"
 python-dotenv = "^0.21.1"
 internetarchive = "^3.3.0"
+rich = "^13.3.1"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.1"

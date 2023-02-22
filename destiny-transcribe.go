@@ -7,16 +7,27 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 
 	vosk "github.com/alphacep/vosk-api/go"
 	uiprogress "github.com/gosuri/uiprogress"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+    err := godotenv.Load()
+    if err != nil {
+        fmt.Println("Error loading .env file")
+        return
+    }
+
+    frameSize := os.Getenv("FRAME_SIZE")
+
     // use ffmpeg to split audio into chunks of 1000 frames
     cmd := exec.Command("ffmpeg", "-loglevel", "quiet", "-i", "audio.wav", "-f", "segment",
-        "-segment_time", "1000", "-c", "copy", "audio-%09d.wav")
-    err := cmd.Run()
+        "-segment_time", frameSize, "-c", "copy", "audio-%09d.wav")
+
+    err = cmd.Run()
     if err != nil {
         fmt.Println("Error executing command:", err)
         return
@@ -102,7 +113,8 @@ func collectSegments(file string, model *vosk.VoskModel) []map[string]interface{
     size := stat.Size()
 
     // read file in 1000 frame chunks
-    chunkSize := 1000 * 2
+    frameSize,  _ := strconv.Atoi(os.Getenv("FRAME_SIZE"))
+    chunkSize := frameSize * 2
     numChunks := int(size) / chunkSize
 
     bar := uiprogress.AddBar(numChunks).AppendCompleted().PrependElapsed()
